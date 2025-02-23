@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]      #项目构建所需要的依赖项，这里是 hatchling，它是一个用于构建 Python 项目的工具。
+build-backend = "hatchling.build"  # 指定构建后端，这里使用的是 hatchling.build，它与 hatchling 工具配合，用于打包和发布 Python 项目。
+
+[project]
+name = "fl-pytorch"
+version = "1.0.0"
+description = ""
+license = "Apache-2.0"
+dependencies = [
+    "flwr[simulation]>=1.10.0",
+    "flwr-datasets[vision]>=0.3.0",
+    "torch==2.2.1",
+    "torchvision==0.17.1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]  #指定需要打包的 Python 包目录，["."] 表示当前目录下的所有包将包含在构建的 Wheel 包中。
+
+[tool.flwr.app]
+publisher = "rao"
+
+[tool.flwr.app.components]
+serverapp = "fl_pytorch.server_app:app"
+clientapp = "fl_pytorch.client_app:app"
+
+[tool.flwr.app.config]
+num-server-rounds = 300   #联邦学习的服务器训练轮数
+fraction-fit = 0.75   #每一轮中参与训练的客户端比例
+local-epochs = 5   #每个客户端本地训练的轮数
+
+[tool.flwr.federations]
+default = "local-simulation"    #指定默认的联邦学习环境，这里是 local-simulation，表示在本地模拟环境中运行。
+
+[tool.flwr.federations.local-simulation]
+options.num-supernodes = 54  #本地模拟环境的超节点数量
+options.backend.client-resources.num-cpus = 6 # each ClientApp assumes to use 2CPUs
+options.backend.client-resources.num-gpus = 0.5 # at most 5 ClientApp will run in a given GPU
